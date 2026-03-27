@@ -17,6 +17,7 @@
     },
     "scripts": {
         "lint": "biome check",
-        "build": "rollup -c"
+        "build": "rollup -c",
+        "test": "test --concurrent --randomize --rerun-each 16"
     }
 }
