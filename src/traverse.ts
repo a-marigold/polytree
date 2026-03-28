@@ -20,6 +20,59 @@ const NO_PARENT = [] as const satisfies NodeLike[];
  */
 const NO_KEY = '0' as const satisfies string;
 
+/**
+ *
+ * #### Traverses `node` iterativly.
+ * #### Can traverse any AST that has nodes with `type` property.
+ *
+ * `onEnter` and `onExit` can return a new node to replace the current node
+ *
+ * or {@link STOP} to immediatly stop traversal.
+ *
+ * @template T Type of possible Node that can appear in AST.
+ * @template P Type of `parent`.
+ *
+ * @param node Root `Estree` like node to be traversed.
+ *
+ * @param onEnter Can return {@link SKIP} not to traverse the current node.
+ * @param onExit If is provided, called only after all node's children and properties are traversed.
+ *   SHOULD NOT return {@link SKIP} because it can cause unexpected errors.
+ *
+ * @param parent Parent of `node`. If this is provided, the root node can be replaced.
+ * @param key Key in `parent` of `node`.
+ *
+ *
+ *
+ * @example
+ * `key` and `parent` usage
+ *
+ *
+ * ```typescript
+ *
+ * const jsxExpressionContainer = {
+ *   type: 'JSXExpressionContainer',
+ *   expression: { type: 'MyLiteral', value: 'Hello' },
+ * };
+ *
+ * traverse(
+ *   jsxExpressionContainer.expression,
+ *   (node) => {
+ *     if(node.type === 'MyLiteral') {
+ *       // If `key` and `parent` are not provided, replacing will not do anything
+ *       return {
+ *         type: 'MyLiteral',
+ *         value: node.value + ' World!'
+ *       };
+ *     }
+ *   },
+ *   null,
+ *   jsxExpressionContainer,
+ *   'expression',
+ * );
+ * ```
+ *
+ */
+
 export const traverse: Traverse = (
     node: NodeLike,
 
@@ -27,9 +80,8 @@ export const traverse: Traverse = (
     onExit: OnExit<NodeLike> | null,
 
     parent?: NodeLike | NodeLike[],
-
     key?: string,
-) => {
+): void => {
     const nodeStack: NodeLike[] = [node];
     const parentStack: (NodeLike | NodeLike[])[] = [parent ?? NO_PARENT];
     const keyStack: string[] = [key ?? NO_KEY];
