@@ -114,28 +114,27 @@ export const traverse: Traverse = (
                 (parent as NodeLike)[key] = exitResult;
             }
             continue;
-        } else if (onEnter) {
-            const enterResult = onEnter(node);
+        } else {
+            if (onEnter) {
+                const enterResult = onEnter(node);
 
-            if (enterResult) {
-                if (enterResult === SKIP) {
-                    continue;
+                if (enterResult) {
+                    if (enterResult === SKIP) {
+                        continue;
+                    }
+
+                    if (enterResult === STOP) {
+                        return;
+                    }
+
+                    (parent as NodeLike)[key] = enterResult;
                 }
-
-                if (enterResult === STOP) {
-                    return;
-                }
-
-                (parent as NodeLike)[key] = enterResult;
             }
 
             if (onExit) {
                 nodeStack.push(node);
-
                 parentStack.push(parent);
-
                 keyStack.push(key);
-
                 stateStack.push(1);
             }
 
