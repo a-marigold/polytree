@@ -9,11 +9,11 @@ import { traverse } from 'polytree';
 traverse<T, P>( // `T` - type of node, `P` - type of parent
     node, // Root node to be traversed
 
-    () => {}, // Called on every entrance to node
+    () => {}, // Called on every entrance to node. Can be `null`
     () => {}, // Called when all properties and children of a node are traversed. Can be `null`
 
     parent, // Parent (optional)
-    key, // Key of node in `parent` (optionalll)
+    key, // Key of node in `parent` (optional)
 );
 ```
 

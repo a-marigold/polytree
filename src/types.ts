@@ -41,13 +41,13 @@ export type OnExit<T extends NodeLike> = Visitor<
 export type Traverse = {
     <T extends NodeLike>(
         node: T,
-        onEnter: OnEnter<T>,
+        onEnter: OnEnter<T> | null,
         onExit: OnExit<T> | null,
     ): void;
 
     <T extends NodeLike, P extends NodeLike | NodeLike[]>(
         node: T,
-        onEnter: OnEnter<T>,
+        onEnter: OnEnter<T> | null,
         onExit: OnExit<T> | null,
         parent: P,
         key: P extends NodeLike ? Extract<keyof P, string> : string,

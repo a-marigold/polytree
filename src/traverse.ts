@@ -76,7 +76,7 @@ const NO_KEY = '0' as const satisfies string;
 export const traverse: Traverse = (
     node: NodeLike,
 
-    onEnter: OnEnter<NodeLike>,
+    onEnter: OnEnter<NodeLike> | null,
     onExit: OnExit<NodeLike> | null,
 
     parent?: NodeLike | NodeLike[],
@@ -114,7 +114,7 @@ export const traverse: Traverse = (
                 (parent as NodeLike)[key] = exitResult;
             }
             continue;
-        } else {
+        } else if (onEnter) {
             const enterResult = onEnter(node);
 
             if (enterResult) {
