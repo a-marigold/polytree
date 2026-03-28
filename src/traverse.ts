@@ -3,22 +3,22 @@ import type { NodeLike, OnEnter, OnExit, Traverse } from './types';
 import { SKIP, STOP } from './constants';
 
 /**
- * Used in `parentStack` in {@link traverse} for `parent` root node not to have a risk
+ * Used in `parentStack` in {@link traverse} for `parent` of root node
  *
- * of polymorphic objects in the `parentStack`.
+ * not to have a risk of polymorphic objects in the `parentStack`.
  */
-const NO_PARENT = { type: '' } as const satisfies NodeLike;
+const NO_PARENT = [] as const satisfies NodeLike[];
 
 /**
  *
  *
  *
- * Used in `keyStack` in {@link traverse} for `key` of root node not to have a risk
+ * Used in `keyStack` in {@link traverse} for `key` of root node
  *
- * of polymorphic types in the `keyStack`.
+ * not to have a risk of polymorphic types in the `keyStack`.
+ *
  */
-
-const NO_KEY = '-1' as const satisfies string;
+const NO_KEY = '0' as const satisfies string;
 
 export const traverse: Traverse = (
     node: NodeLike,
@@ -31,32 +31,62 @@ export const traverse: Traverse = (
     key?: string,
 ) => {
     const nodeStack: NodeLike[] = [node];
-
     const parentStack: (NodeLike | NodeLike[])[] = [parent ?? NO_PARENT];
-
     const keyStack: string[] = [key ?? NO_KEY];
+
+    /**
+     *
+     * `0` means calling {@link onEnter}.
+     *
+     * `1` means calling {@link onExit}.
+     */
+
+    const stateStack: (0 | 1)[] = [0];
 
     while (nodeStack.length) {
         const node = nodeStack.pop() as NodeLike;
+
         const parent = parentStack.pop() as NodeLike | NodeLike[];
+
         const key = keyStack.pop() as string;
 
-        const enterResult = onEnter(node);
+        if (stateStack.pop()) {
+            // assertion is not dangerous because there is not any `1` in `stateStack` if `onExit` is not provided.
+            const exitResult = (onExit as OnExit<NodeLike>)(node);
 
-        if (enterResult) {
-            if (enterResult === SKIP) {
-                continue;
+            if (exitResult) {
+                if (exitResult === STOP) {
+                    return;
+                }
+
+                (parent as NodeLike)[key] = exitResult;
             }
 
-            if (enterResult === STOP) {
-                return;
-            }
+            continue;
+        } else {
+            const enterResult = onEnter(node);
 
-            if (parent) {
-                // assertion is needed because typescript cannot trust that `key` is an indexed type of `parent`. the `key` is not undefined if the `parent` is not undefined
+            if (enterResult) {
+                if (enterResult === SKIP) {
+                    continue;
+                }
+
+                if (enterResult === STOP) {
+                    return;
+                }
 
                 (parent as NodeLike)[key] = enterResult;
             }
+        }
+
+        if (onExit) {
+            nodeStack.push(node);
+
+            parentStack.push(parent);
+
+            keyStack.push(key);
+
+            stateStack.push(1);
         }
 
         for (const nodeKey in node) {
@@ -64,9 +94,12 @@ export const traverse: Traverse = (
 
             if ((property as NodeLike | undefined)?.type) {
                 nodeStack.push(property as NodeLike);
+
                 parentStack.push(node);
 
                 keyStack.push(nodeKey);
+
+                continue;
             }
 
             if (Array.isArray(property)) {
@@ -76,26 +109,11 @@ export const traverse: Traverse = (
                     propIndex--
                 ) {
                     nodeStack.push(property[propIndex]);
-
                     parentStack.push(property);
-
                     keyStack.push(propIndex.toString());
                 }
-            }
-        }
 
-        if (onExit) {
-            const exitResult = onExit(node);
-
-            if (exitResult) {
-                if (exitResult === STOP) {
-                    return;
-                }
-
-                if (parent) {
-                    // assertion is needed because typescript cannot trust that `key` is an indexed type of `parent`. the `key` is not undefined if the `parent` is not undefined
-                    (parent as NodeLike)[key as string] = exitResult;
-                }
+                continue;
             }
         }
     }

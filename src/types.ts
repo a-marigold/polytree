@@ -43,13 +43,13 @@ export type Traverse = {
         node: T,
         onEnter: OnEnter<T>,
         onExit: OnExit<T> | null,
-        parent: NodeLike | NodeLike[],
-        key: string,
     ): void;
 
-    <T extends NodeLike>(
+    <T extends NodeLike, P extends NodeLike | NodeLike[]>(
         node: T,
         onEnter: OnEnter<T>,
         onExit: OnExit<T> | null,
+        parent: P,
+        key: P extends NodeLike ? Extract<keyof P, string> : string,
     ): void;
 };
