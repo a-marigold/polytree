@@ -18,6 +18,6 @@
     "scripts": {
         "lint": "biome check",
         "build": "rollup -c",
-        "test": "test --concurrent --randomize --rerun-each 16"
+        "test": "bun test --concurrent --randomize --rerun-each 1"
     }
 }

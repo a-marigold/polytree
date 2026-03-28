@@ -36,7 +36,7 @@ const NO_KEY = '0' as const satisfies string;
  *
  * @param onEnter Can return {@link SKIP} not to traverse the current node.
  * @param onExit If is provided, called only after all node's children and properties are traversed.
- *   SHOULD NOT return {@link SKIP} because it can cause unexpected errors.
+ *   SHOULD NOT return {@link SKIP} because it can cause unexpected behaviour.
  *
  * @param parent Parent of `node`. If this is provided, the root node can be replaced.
  * @param key Key in `parent` of `node`.
@@ -113,7 +113,6 @@ export const traverse: Traverse = (
 
                 (parent as NodeLike)[key] = exitResult;
             }
-
             continue;
         } else {
             const enterResult = onEnter(node);
@@ -129,43 +128,46 @@ export const traverse: Traverse = (
 
                 (parent as NodeLike)[key] = enterResult;
             }
-        }
 
-        if (onExit) {
-            nodeStack.push(node);
+            if (onExit) {
+                nodeStack.push(node);
 
-            parentStack.push(parent);
+                parentStack.push(parent);
 
-            keyStack.push(key);
+                keyStack.push(key);
 
-            stateStack.push(1);
-        }
-
-        for (const nodeKey in node) {
-            const property = node[nodeKey];
-
-            if ((property as NodeLike | undefined)?.type) {
-                nodeStack.push(property as NodeLike);
-
-                parentStack.push(node);
-
-                keyStack.push(nodeKey);
-
-                continue;
+                stateStack.push(1);
             }
 
-            if (Array.isArray(property)) {
-                for (
-                    let propIndex = property.length - 1;
-                    propIndex >= 0;
-                    propIndex--
-                ) {
-                    nodeStack.push(property[propIndex]);
-                    parentStack.push(property);
-                    keyStack.push(propIndex.toString());
+            for (const nodeKey in node) {
+                const property = node[nodeKey];
+
+                if ((property as NodeLike | undefined)?.type) {
+                    nodeStack.push(property as NodeLike);
+
+                    parentStack.push(node);
+
+                    keyStack.push(nodeKey);
+
+                    stateStack.push(0);
+
+                    continue;
                 }
 
-                continue;
+                if (Array.isArray(property)) {
+                    for (
+                        let propIndex = property.length - 1;
+                        propIndex >= 0;
+                        propIndex--
+                    ) {
+                        nodeStack.push(property[propIndex]);
+                        parentStack.push(property);
+                        keyStack.push(propIndex.toString());
+                        stateStack.push(0);
+                    }
+
+                    continue;
+                }
             }
         }
     }

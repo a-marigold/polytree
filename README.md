@@ -12,8 +12,8 @@ traverse<T, P>( // `T` - type of node, `P` - type of parent
     () => {}, // Called on every entrance to node
     () => {}, // Called when all properties and children of a node are traversed. Can be `null`
 
-    parent, // Parent
-    key, // Key of node in `parent`
+    parent, // Parent (optional)
+    key, // Key of node in `parent` (optionalll)
 );
 ```
 

@@ -24,7 +24,7 @@ export type Visitor<T extends NodeLike, R> = (node: T) => R;
  */
 export type OnEnter<T extends NodeLike> = Visitor<
     T,
-    NodeLike | typeof SKIP | typeof STOP | null | undefined
+    NodeLike | typeof SKIP | typeof STOP | void
 >;
 
 /**
@@ -35,7 +35,7 @@ export type OnEnter<T extends NodeLike> = Visitor<
  */
 export type OnExit<T extends NodeLike> = Visitor<
     T,
-    NodeLike | typeof STOP | null | undefined
+    NodeLike | typeof STOP | void
 >;
 
 export type Traverse = {
