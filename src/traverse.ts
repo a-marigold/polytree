@@ -22,7 +22,6 @@ const NO_KEY = '0' as const;
 
 /**
  *
- *
  * #### Traverses `node` iterativly.
  * #### Can traverse any AST that has nodes with `type` property.
  *
@@ -41,6 +40,7 @@ const NO_KEY = '0' as const;
  *
  * @param parent Parent of `node`. If this is provided, the root node can be replaced.
  * @param key Key in `parent` of `node`. If `parent` is an array, `key` should be a string of index.
+ *
  */
 
 export const traverse: Traverse = <
@@ -77,6 +77,7 @@ export const traverse: Traverse = <
             // assertion is not dangerous because there is not any truthy value in `stateStack` if `onExit` is not provided.
             const exitResult = (onExit as OnExit<NodeLike, NodeParentLike>)(
                 node,
+
                 parent,
                 key,
             );
@@ -86,8 +87,11 @@ export const traverse: Traverse = <
                     return;
                 }
 
-                (parent as NodeLike)[key] = exitResult;
+                if (parent !== NO_PARENT) {
+                    (parent as NodeLike)[key] = exitResult;
+                }
             }
+
             continue;
         } else {
             if (onEnter) {
@@ -102,7 +106,9 @@ export const traverse: Traverse = <
                         return;
                     }
 
-                    (parent as NodeLike)[key] = enterResult;
+                    if (parent !== NO_PARENT) {
+                        (parent as NodeLike)[key] = enterResult;
+                    }
                 }
             }
 
@@ -146,5 +152,3 @@ export const traverse: Traverse = <
         }
     }
 };
-
-// TODO: MEMORY LEAK
