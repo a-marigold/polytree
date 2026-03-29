@@ -154,37 +154,86 @@ describe('traverse', () => {
 
         expect(visited).toMatchInlineSnapshot(`"aebfcd"`);
     });
+    it('should visit every child of property that is an array in correct order', () => {
+        let visited = '';
 
-    describe('`onEnter` and `onExit`', () => {
-        it('`onEnter` and `onExit` should be called the same times', () => {
-            const onEnter = vi.fn();
+        traverse(
+            {
+                type: 'a',
+                children: [
+                    { type: 'b', children: [{ type: 'c' }, { type: 'd' }] },
+                    { type: 'e' },
+                    { type: 'f' },
+                ],
+            },
+            (node) => {
+                visited += node.type;
+            },
 
-            const onExit = vi.fn();
+            null,
+        );
 
+        expect(visited).toBe('abcdef');
+    });
+
+    it('`onEnter` and `onExit` should be called the same times', () => {
+        const onEnter = vi.fn();
+
+        const onExit = vi.fn();
+
+        traverse(
+            {
+                type: 'a',
+                b: {
+                    type: 'b',
+                    c: {
+                        type: 'c',
+                        children: [{ type: 'a' }, { type: 'b' }, { type: 'c' }],
+                    },
+                },
+            },
+
+            onEnter,
+            onExit,
+        );
+
+        expect(onEnter.mock.calls.length).toBe(onExit.mock.calls.length);
+    });
+
+    describe('onEnter', () => {
+        testTraverseVisitor('onEnter');
+
+        it('should skip the whole traversal of a node if `SKIP` is returned', () => {
+            let visited = '';
             traverse(
                 {
                     type: 'a',
-                    b: {
+                    value: {
                         type: 'b',
-                        c: {
+                        value: {
                             type: 'c',
-                            children: [
-                                { type: 'a' },
-                                { type: 'b' },
-                                { type: 'c' },
+                            value: [
+                                { type: 'd', value: { type: 'e' } },
+                                { type: 'f' },
                             ],
                         },
                     },
                 },
 
-                onEnter,
-                onExit,
+                (node) => {
+                    visited += node.type;
+                    if (node.type === 'c') {
+                        return SKIP;
+                    }
+                },
+                null,
             );
 
-            expect(onEnter.mock.calls.length).toBe(onExit.mock.calls.length);
+            expect(visited).toBe('abc');
         });
+    });
 
-        testTraverseVisitor('onEnter');
+    describe('onExit', () => {
         testTraverseVisitor('onExit');
     });
 });
