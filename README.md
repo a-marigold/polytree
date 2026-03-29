@@ -1,4 +1,4 @@
-# <p align='center'> polytree </p>
+# <p align='center'> polyast </p>
 
 Traverses any AST, nodes of which have `type` property.
 
@@ -7,7 +7,7 @@ Traverses any AST, nodes of which have `type` property.
 Overview
 
 ```typescript
-import { traverse } from 'polytree';
+import { traverse } from 'polyast';
 
 // `traverse` is iterative function so there are not problems with AST depth
 traverse<N, P>( // `N` - type of node, `P` - type of parent
@@ -25,7 +25,7 @@ traverse<N, P>( // `N` - type of node, `P` - type of parent
 To replace a node, return a new node
 
 ```typescript
-import { traverse } from 'polytree';
+import { traverse } from 'polyast';
 
 traverse(
     node,
@@ -42,7 +42,7 @@ traverse(
 To manually replace a node (for example, after traversal), use `parent` and `key` arguments of visitor
 
 ```typescript
-import { traverse } from 'polytree';
+import { traverse } from 'polyast';
 
 traverse(
     node,
@@ -67,7 +67,7 @@ traverse(
 To fully skip a node, return `SKIP` constant in `onEnter`
 
 ```typescript
-import { traverse, SKIP } from 'polytree';
+import { traverse, SKIP } from 'polyast';
 
 traverse(
     node,
@@ -81,7 +81,7 @@ traverse(
 Return `STOP` constant to stop `traverse` function
 
 ```typescript
-import { traverse, STOP } from 'polytree';
+import { traverse, STOP } from 'polyast';
 
 traverse(
     node,
@@ -101,7 +101,7 @@ traverse(
 
 // `parent` and `key` parameters are used to solve it
 
-import { traverse } from 'polytree';
+import { traverse } from 'polyast';
 
 const jsxExpressionContainer = {
     type: 'JSXExpressionContainer',

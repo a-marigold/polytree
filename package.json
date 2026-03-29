@@ -1,6 +1,6 @@
 {
-    "name": "polytree",
-    "version": "0.1.0",
+    "name": "polyast",
+    "version": "1.0.0",
     "description": "Library for traversal of any AST, nodes of which have `type` property",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
@@ -18,10 +18,10 @@
     "readme": "./README.md",
     "repository": {
         "type": "git",
-        "url": "https://github.com/a-marigold/polytree"
+        "url": "https://github.com/a-marigold/polyast"
     },
     "bugs": {
-        "url": "https://github.com/a-marigold/polytree/issues"
+        "url": "https://github.com/a-marigold/polyast/issues"
     },
     "sideEffects": false,
     "files": [
@@ -30,6 +30,7 @@
     "keywords": [
         "traverse",
         "walk",
+        "walker",
         "AST",
         "estree"
     ],
