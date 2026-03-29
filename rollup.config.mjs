@@ -6,7 +6,11 @@ import dts from 'rollup-plugin-dts';
 export default defineConfig([
     {
         input: './src/index.ts',
+
+        external: ['**/__tests__/**'],
+
         plugins: [typescript({ outDir: './dist', exclude: ['**/tests/**'] })],
+
         output: {
             file: './dist/index.js',
             format: 'esm',
@@ -14,6 +18,7 @@ export default defineConfig([
     },
     {
         input: './src/index.ts',
+        external: ['**/__tests__/**'],
         plugins: [dts()],
         output: {
             file: './dist/index.d.ts',
