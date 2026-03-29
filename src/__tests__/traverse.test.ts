@@ -41,7 +41,14 @@ const testTraverseVisitor = (visitorName: 'onEnter' | 'onExit') => {
 
         expect(astSnapshot).not.toBe(JSON.stringify(ast));
 
-        expect(ast).toMatchInlineSnapshot();
+        expect(ast).toMatchInlineSnapshot(`
+          {
+            "type": "Root",
+            "value": {
+              "type": "Replaced",
+            },
+          }
+        `);
     });
 
     it(`should stop immediatly when \`${visitorName}\` returned \`STOP\``, () => {
@@ -259,13 +266,13 @@ describe('traverse', () => {
                 },
 
                 (node) => {
-                    if (node.type === 'a') {
+                    if (node.type === 'Root') {
                         visitedAfterRootTraversal = visited;
                     }
                 },
             );
 
-            expect(visitedAfterRootTraversal).toBe('abcdef');
+            expect(visitedAfterRootTraversal).toMatchInlineSnapshot(`"RootABCDE"`);
         });
     });
 });

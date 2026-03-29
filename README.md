@@ -2,28 +2,33 @@
 
 Traverses any AST, nodes of which have `type` property.
 
+### Usage
+
 ```typescript
 import { traverse } from 'polytree';
 
-// Traverse is fully iterative function, so there are not problems with depth
+// `traverse` is iterative function so there are not problems with AST depth
 traverse<T, P>( // `T` - type of node, `P` - type of parent
     node, // Root node to be traversed
 
-    () => {}, // Called on every entrance to node. Can be `null`
-    () => {}, // Called when all properties and children of a node are traversed. Can be `null`
+    (node) => {}, // Called on every entrance to node. Can be `null`
+
+    (node) => {}, // Called when all properties and children of a node are traversed. Can be `null`
 
     parent, // Parent (optional)
+
     key, // Key of node in `parent` (optional)
 );
 ```
 
-To replace a node
+To replace a node, return a new node
 
 ```typescript
 import { traverse } from 'polytree';
 
 traverse(
     node,
+
     (node) =>
         node.type === 'Identifier' && node.name === 'foo'
             ? { type: 'Identifier', name: 'bar' }
@@ -32,26 +37,21 @@ traverse(
 );
 ```
 
-To skip a node immersion
+Return `SKIP` constant in `onEnter` to fully skip a node
 
 ```typescript
 import { traverse, SKIP } from 'polytree';
 
-// ✅ Return `SKIP` only in `onEnter`
-traverse(node, (node) => (node.type.includes('JSX') ? SKIP : null), null);
-
-// ❌ `SKIP` should not be returned from `onExit`
-// It can cause unexpected behaviour
 traverse(
     node,
 
-    () => {},
+    (node) => (node.type.includes('JSX') ? SKIP : null), // ✅ Return skip only from `onEnter`
 
-    (node) => (node.type.includes('JSX') ? SKIP : null), // ❌
+    (node) => (node.type.includes('JSX') ? SKIP : null), // ❌ `SKIP` should not be returned from `onExit`
 );
 ```
 
-To stop `traverse` function
+Return `STOP` constant to stop `traverse` function
 
 ```typescript
 import { traverse, STOP } from 'polytree';
@@ -66,7 +66,7 @@ traverse(
 `parent` and `key` usage
 
 ```typescript
-// There is `JSXExpressionContainer`
+// There is a `JSXExpressionContainer`
 // The task is to replace `foo` identifiers with `bar` identifiers in `JSXExpressionContainer.expression`
 
 // It might seem to be a problem, because if `foo` identifier is the `JSXExpressionContainer.expression`
