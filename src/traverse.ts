@@ -88,7 +88,7 @@ export const traverse: Traverse = <
                 }
 
                 if (parent !== NO_PARENT) {
-                    (parent as NodeLike)[key] = exitResult;
+                    (parent as Record<string, unknown>)[key] = exitResult;
                 }
             }
 
@@ -107,7 +107,7 @@ export const traverse: Traverse = <
                     }
 
                     if (parent !== NO_PARENT) {
-                        (parent as NodeLike)[key] = enterResult;
+                        (parent as Record<string, unknown>)[key] = enterResult;
                     }
                 }
             }
@@ -133,7 +133,10 @@ export const traverse: Traverse = <
                     continue;
                 }
 
-                if (Array.isArray(property)) {
+                if (
+                    Array.isArray(property) &&
+                    typeof property[0] === 'object'
+                ) {
                     for (
                         let propIndex = property.length - 1;
                         propIndex >= 0;
