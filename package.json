@@ -7,9 +7,11 @@
     "type": "module",
     "license": "MIT",
     "devDependencies": {
+        "@babel/parser": "^7.29.2",
         "@biomejs/biome": "^2.4.9",
         "@rollup/plugin-typescript": "^12.3.0",
         "@types/bun": "latest",
+        "oxc-parser": "^0.121.0",
         "rollup": "^4.60.0",
         "rollup-plugin-dts": "^6.4.1",
         "tslib": "^2.8.1"
@@ -50,7 +52,7 @@
     "scripts": {
         "lint": "biome check",
         "build": "rollup -c",
-        "test": "bun test --concurrent --randomize --rerun-each 16",
+        "test": "bun test --concurrent --randomize --rerun-each 6",
         "prepublishOnly": "bun run build"
     },
     "publishConfig": {

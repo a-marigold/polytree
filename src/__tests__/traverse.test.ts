@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'bun:test';
 
-import { traverse } from 'src/traverse';
-import { SKIP, STOP } from 'src/constants';
+import { traverse } from '../traverse';
+import { SKIP, STOP } from '../constants';
 
 import type { NodeLike } from 'src/types';
 
@@ -181,6 +181,21 @@ describe('traverse', () => {
 
         expect(visited).toBe('abcdef');
     });
+    it('should not traverse non node objects and arrays, elements of which are not nodes', () => {
+        traverse(
+            { type: 'Root', o: { noType: 'abc' }, prop: [1, 2, 3] },
+            (node) => {
+                if (!('type' in node)) {
+                    throw new Error();
+                }
+            },
+            (node) => {
+                if (!('type' in node)) {
+                    throw new Error();
+                }
+            },
+        );
+    });
 
     it('`onEnter` and `onExit` should be called the same times', () => {
         const onEnter = vi.fn();
@@ -272,7 +287,9 @@ describe('traverse', () => {
                 },
             );
 
-            expect(visitedAfterRootTraversal).toMatchInlineSnapshot(`"RootABCDE"`);
+            expect(visitedAfterRootTraversal).toMatchInlineSnapshot(
+                `"RootABCDE"`,
+            );
         });
     });
 });
