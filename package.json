@@ -1,23 +1,57 @@
 {
     "name": "polytree",
-    "module": "index.ts",
+    "version": "0.1.0",
+    "description": "Library for traversal of any AST, nodes of which have `type` property",
+    "module": "./dist/index.js",
+    "main": "./dist/index.js",
     "type": "module",
-    "private": true,
+    "license": "MIT",
     "devDependencies": {
+        "rollup-plugin-dts": "^6.4.1",
         "@biomejs/biome": "^2.4.9",
         "@types/bun": "latest",
         "rollup": "^4.60.0",
-        "rollup-plugin-dts": "^6.4.1"
+        "@rollup/plugin-typescript": "^12.3.0"
+    },
+    "private": false,
+    "readme": "./README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/a-marigold/polytree"
+    },
+    "bugs": {
+        "url": "https://github.com/a-marigold/polytree/issues"
+    },
+    "sideEffects": false,
+    "files": [
+        "./dist"
+    ],
+    "keywords": [
+        "traverse",
+        "walk",
+        "AST",
+        "estree"
+    ],
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
     },
     "peerDependencies": {
         "typescript": "^5"
     },
-    "dependencies": {
-        "@rollup/plugin-typescript": "^12.3.0"
+    "author": {
+        "name": "marigold",
+        "url": "https://github.com/a-marigold"
     },
     "scripts": {
         "lint": "biome check",
         "build": "rollup -c",
-        "test": "bun test --concurrent --randomize --rerun-each 16"
+        "test": "bun test --concurrent --randomize --rerun-each 16",
+        "prepublishOnly": "bun run build"
+    },
+    "publishConfig": {
+        "access": "public"
     }
 }
