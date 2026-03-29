@@ -7,7 +7,6 @@ import type { SKIP, STOP } from './constants';
  */
 export type NodeLike = {
     type: string;
-    [key: string]: unknown;
 };
 /**
  *
@@ -53,10 +52,10 @@ export type OnExit<
 > = Visitor<N, P, NodeLike | typeof STOP | void | null>;
 
 export type Traverse = {
-    <N extends NodeLike>(
+    <N extends NodeLike, P extends NodeParentLike>(
         node: N,
-        onEnter: OnEnter<N, null> | null,
-        onExit: OnExit<N, null> | null,
+        onEnter: OnEnter<N, P> | null,
+        onExit: OnExit<N, P> | null,
     ): void;
 
     <N extends NodeLike, P extends NodeParentLike>(
