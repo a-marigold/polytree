@@ -29,7 +29,7 @@ const NO_KEY = '0' as const;
  *
  * or {@link STOP} to immediatly stop traversal.
  *
- * @template T Type of possible Node that can appear in AST.
+ * @template N Type of possible Node that can appear in AST.
  * @template P Type of `parent`.
  *
  * @param node Root node to be traversed.
