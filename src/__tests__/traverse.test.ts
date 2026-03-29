@@ -6,14 +6,20 @@ import { SKIP, STOP } from 'src/constants';
 import type { NodeLike } from 'src/types';
 
 const testTraverseVisitor = (visitorName: 'onEnter' | 'onExit') => {
-    it(`should mutate AST if \`${visitorName}\` returned an object`, () => {
+    it(`should replace a node if \`${visitorName}\` returned an object`, () => {
+        const toBeReplacedType = 'ToBeReplaced';
+
         const ast = {
-            type: 'a',
-            b: {
-                type: 'b',
-                c: {
-                    type: 'c',
-                    children: [{ type: 'a' }, { type: 'b' }, { type: 'c' }],
+            type: 'Root',
+            value: {
+                type: toBeReplacedType,
+                value: {
+                    type: 'a',
+                    children: [
+                        { type: toBeReplacedType },
+                        { type: 'b' },
+                        { type: 'c' },
+                    ],
                 },
             },
         };
@@ -21,8 +27,8 @@ const testTraverseVisitor = (visitorName: 'onEnter' | 'onExit') => {
         const astSnapshot = JSON.stringify(ast);
 
         const visitor = (node: NodeLike) => {
-            if (node.type === 'b') {
-                return { type: 'abc' };
+            if (node.type === toBeReplacedType) {
+                return { type: 'Replaced' };
             }
         };
 
@@ -35,89 +41,82 @@ const testTraverseVisitor = (visitorName: 'onEnter' | 'onExit') => {
 
         expect(astSnapshot).not.toBe(JSON.stringify(ast));
 
-        expect(ast).toMatchInlineSnapshot(`
-          {
-            "b": {
-              "type": "abc",
-            },
-            "type": "a",
-          }
-        `);
-    });
-
-    it(`should mutate AST if \`${visitorName}\` returned an object`, () => {
-        const ast = {
-            type: 'a',
-
-            b: {
-                type: 'b',
-
-                c: {
-                    type: 'c',
-
-                    children: [{ type: 'a' }, { type: 'b' }, { type: 'c' }],
-                },
-            },
-        };
-
-        const astSnapshot = JSON.stringify(ast);
-
-        const visitor = (node: NodeLike) => {
-            if (node.type === 'b') {
-                return { type: 'abc' };
-            }
-        };
-
-        traverse(
-            ast,
-
-            visitorName === 'onEnter' ? visitor : null,
-            visitorName === 'onExit' ? visitor : null,
-        );
-
-        expect(astSnapshot).not.toBe(JSON.stringify(ast));
-
-        expect(ast).toMatchInlineSnapshot(`
-          {
-            "b": {
-              "type": "abc",
-            },
-            "type": "a",
-          }
-        `);
+        expect(ast).toMatchInlineSnapshot();
     });
 
     it(`should stop immediatly when \`${visitorName}\` returned \`STOP\``, () => {
+        const unreachableNodeType = 'Dead1';
+
         let visited = '';
 
         const visitor = (node: NodeLike) => {
             visited += node.type;
 
-            if (node.type === 'c') {
+            if (node.type === 'STOP') {
                 return STOP;
             }
         };
 
         traverse(
             {
-                type: 'a',
-
+                type: 'Root',
                 value: {
-                    type: 'b',
-                    value: {
-                        type: 'd',
-                    },
-                    value2: {
-                        type: 'c',
-                    },
+                    type: 'Child',
+
+                    children: [{ type: 'STOP' }, { type: unreachableNodeType }],
                 },
             },
 
             visitorName === 'onEnter' ? visitor : null,
+
             visitorName === 'onExit' ? visitor : null,
         );
 
-        expect(visited).not.toInclude('d');
+        expect(visited).not.toInclude(unreachableNodeType);
+    });
+
+    it('should not have errors with replacing root node if `parent` and `key` are not provided', () => {
+        const visitor = (node: NodeLike) => {
+            if (node.type === 'root') {
+                return { type: 'a' };
+            }
+        };
+
+        traverse(
+            { type: 'root' },
+
+            visitorName === 'onEnter' ? visitor : null,
+
+            visitorName === 'onExit' ? visitor : null,
+        );
+    });
+
+    it('should replace root node if `parent` and `key` are provided', () => {
+        const root = {
+            type: 'root',
+        };
+
+        const parent = {
+            type: 'parent',
+            value: root,
+        };
+
+        const replacementType = 'replacement';
+
+        const visitor = (node: NodeLike) =>
+            node.type === 'root' ? { type: replacementType } : null;
+
+        traverse(
+            root,
+            visitorName === 'onEnter' ? visitor : null,
+            visitorName === 'onExit' ? visitor : null,
+
+            parent,
+
+            'value',
+        );
+
+        expect(parent.value.type).toBe(replacementType);
     });
 };
 
@@ -235,5 +234,38 @@ describe('traverse', () => {
 
     describe('onExit', () => {
         testTraverseVisitor('onExit');
+
+        it('should call `onExit` only after whole the node is traversed', () => {
+            let visited = '';
+
+            let visitedAfterRootTraversal = '';
+
+            traverse(
+                {
+                    type: 'Root',
+                    value: {
+                        type: 'A',
+                        value: {
+                            type: 'B',
+                            value: [
+                                { type: 'C', value: { type: 'D' } },
+                                { type: 'E' },
+                            ],
+                        },
+                    },
+                },
+                (node) => {
+                    visited += node.type;
+                },
+
+                (node) => {
+                    if (node.type === 'a') {
+                        visitedAfterRootTraversal = visited;
+                    }
+                },
+            );
+
+            expect(visitedAfterRootTraversal).toBe('abcdef');
+        });
     });
 });

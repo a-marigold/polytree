@@ -32,14 +32,14 @@ const NO_KEY = '0' as const satisfies string;
  * @template T Type of possible Node that can appear in AST.
  * @template P Type of `parent`.
  *
- * @param node Root `Estree` like node to be traversed.
+ * @param node Root node to be traversed.
  *
  * @param onEnter Can return {@link SKIP} not to traverse the current node.
- * @param onExit If is provided, called only after all node's children and properties are traversed.
+ * @param onExit Сalled only after all node's children are traversed.
  *   SHOULD NOT return {@link SKIP} because it can cause unexpected behaviour.
  *
  * @param parent Parent of `node`. If this is provided, the root node can be replaced.
- * @param key Key in `parent` of `node`.
+ * @param key Key in `parent` of `node`. If `parent` is an array, `key` should be a string of index.
  *
  *
  *
@@ -48,7 +48,6 @@ const NO_KEY = '0' as const satisfies string;
  *
  *
  * ```typescript
- *
  * const jsxExpressionContainer = {
  *   type: 'JSXExpressionContainer',
  *   expression: { type: 'MyLiteral', value: 'Hello' },
@@ -171,3 +170,5 @@ export const traverse: Traverse = (
         }
     }
 };
+
+// TODO: MEMORY LEAK
