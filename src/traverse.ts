@@ -9,18 +9,6 @@ import type {
 import { SKIP, STOP } from './constants';
 
 /**
- * Used in `parentStack` in {@link traverse} for parent of root node if `parent` argument is not provided.
- *
- */
-
-const NO_PARENT: NodeParentLike = [];
-
-/**
- * Used in `keyStack` in {@link traverse} for key of root node if `key` argument is not provided.
- */
-const NO_KEY = '0' as const;
-
-/**
  *
  * #### Traverses `node` iterativly.
  * #### Can traverse any AST that has nodes with `type` property.
@@ -41,6 +29,7 @@ const NO_KEY = '0' as const;
  * @param parent Parent of `node`. If this is provided, the root node can be replaced.
  * @param key Key in `parent` of `node`. If `parent` is an array, `key` should be a string of index.
  *
+ *
  */
 
 export const traverse: Traverse = <
@@ -54,40 +43,51 @@ export const traverse: Traverse = <
     parent?: P,
     key?: string,
 ): void => {
-    const nodeStack: N[] = [node];
-    const parentStack: P[] = [parent ?? (NO_PARENT as P)];
-    const keyStack: string[] = [key ?? NO_KEY];
+    /**
+     * `0` means calling `onEnter`.
+     *
+     * `1` means calling `onExit`.
+     *
+     */
+    type NodeState = 0 | 1;
 
     /**
-     * `0` means calling {@link onEnter}.
+     * `nodeStack` is flattened for better performance.
      *
-     * `1` means calling {@link onExit}.
+     * It has significant order which must be supported:
+     * ```typescript
+     * nodeStack.pop(); // `NodeState`
+     * nodeStack.pop(); // Key
+     * nodeStack.pop(); // Parent
+     * nodeStack.pop(); // Node
+     *
+     * nodeStack.push(N, P, Key, 0 | 1);
+     * ```
      */
-
-    const stateStack: (0 | 1)[] = [0];
+    const nodeStack: (N | P | undefined | string | NodeState)[] = [
+        node,
+        parent,
+        key,
+        0,
+    ];
 
     while (nodeStack.length) {
+        // assertionss below are not dangeruous - see the description of `nodeStack`
+        const state = nodeStack.pop() as NodeState;
+        const key = nodeStack.pop() as string;
+        const parent = nodeStack.pop() as P;
         const node = nodeStack.pop() as N;
 
-        const parent = parentStack.pop() as P;
-
-        const key = keyStack.pop() as string;
-
-        if (stateStack.pop()) {
+        if (state) {
             // assertion is not dangerous because there is not any truthy value in `stateStack` if `onExit` is not provided.
-            const exitResult = (onExit as OnExit<NodeLike, NodeParentLike>)(
-                node,
-
-                parent,
-                key,
-            );
+            const exitResult = (onExit as OnExit<N, P>)(node, parent, key);
 
             if (exitResult) {
                 if (exitResult === STOP) {
                     return;
                 }
 
-                if (parent !== NO_PARENT) {
+                if (parent) {
                     (parent as Record<string, unknown>)[key] = exitResult;
                 }
             }
@@ -106,29 +106,20 @@ export const traverse: Traverse = <
                         return;
                     }
 
-                    if (parent !== NO_PARENT) {
+                    if (parent) {
                         (parent as Record<string, unknown>)[key] = enterResult;
                     }
                 }
             }
 
             if (onExit) {
-                nodeStack.push(node);
-                parentStack.push(parent);
-                keyStack.push(key);
-                stateStack.push(1);
+                nodeStack.push(node, parent, key, 1);
             }
             for (const nodeKey in node) {
                 const property = node[nodeKey];
 
-                if ((property as NodeLike | undefined)?.type) {
-                    nodeStack.push(property as N);
-
-                    parentStack.push(node as unknown as P);
-
-                    keyStack.push(nodeKey);
-
-                    stateStack.push(0);
+                if ((property as N | undefined)?.type) {
+                    nodeStack.push(property as N, node, nodeKey, 0);
 
                     continue;
                 }
@@ -137,16 +128,18 @@ export const traverse: Traverse = <
                     Array.isArray(property) &&
                     typeof property[0] === 'object'
                 ) {
-                    for (
-                        let propIndex = property.length - 1;
-                        propIndex >= 0;
-                        propIndex--
-                    ) {
-                        nodeStack.push(property[propIndex]);
-                        parentStack.push(property as P);
+                    let propIndex = property.length - 1;
+                    while (propIndex >= 0) {
+                        nodeStack.push(
+                            property[propIndex],
 
-                        keyStack.push(propIndex.toString());
-                        stateStack.push(0);
+                            property as P,
+
+                            propIndex.toString(),
+                            0,
+                        );
+
+                        propIndex--;
                     }
 
                     continue;
