@@ -44,6 +44,7 @@ export type OnEnter<
  *
  * Can return {@link STOP} to stop `traverse` function.
  *
+ *
  */
 
 export type OnExit<
