@@ -40,6 +40,7 @@ export const traverse: Traverse = <
 
     onEnter: OnEnter<N, P | null> | null,
     onExit: OnExit<N, P | null> | null,
+
     parent?: P,
     key?: string,
 ): void => {
@@ -118,7 +119,10 @@ export const traverse: Traverse = <
             for (const nodeKey in node) {
                 const property = node[nodeKey];
 
-                if ((property as N | undefined)?.type) {
+                if (
+                    typeof property === 'object' &&
+                    (property as N | null)?.type
+                ) {
                     nodeStack.push(property as N, node, nodeKey, 0);
 
                     continue;
@@ -129,6 +133,7 @@ export const traverse: Traverse = <
                     typeof property[0] === 'object'
                 ) {
                     let propIndex = property.length - 1;
+
                     while (propIndex >= 0) {
                         nodeStack.push(
                             property[propIndex],
