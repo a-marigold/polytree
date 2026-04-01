@@ -26,25 +26,26 @@ import { SKIP, STOP } from './constants';
  * @param onExit Сalled only after all node's children are traversed.
  *   SHOULD NOT return {@link SKIP} because it can cause unexpected behaviour.
  *
+ *
+ *
+ *
  * @param parent Parent of `node`. If this is provided, the root node can be replaced.
  * @param key Key in `parent` of `node`. If `parent` is an array, `key` should be a string of index.
  *
- *
  */
 
-export const traverse: Traverse = <
-    N extends NodeLike,
-    P extends NodeParentLike,
->(
-    node: N,
+export const traverse: Traverse = (
+    node: NodeLike,
 
-    onEnter: OnEnter<N, P | null> | null,
-    onExit: OnExit<N, P | null> | null,
+    onEnter: OnEnter<NodeLike, NodeParentLike | undefined> | null,
+    onExit: OnExit<NodeLike, NodeParentLike | undefined> | null,
 
-    parent?: P,
+    parent?: NodeParentLike,
+
     key?: string,
 ): void => {
     /**
+     *
      * `0` means calling `onEnter`.
      *
      * `1` means calling `onExit`.
@@ -53,35 +54,40 @@ export const traverse: Traverse = <
     type NodeState = 0 | 1;
 
     /**
+     *
      * `nodeStack` is flattened for better performance.
      *
      * It has significant order which must be supported:
+     *
      * ```typescript
      * nodeStack.pop(); // `NodeState`
      * nodeStack.pop(); // Key
-     * nodeStack.pop(); // Parent
+     * nodeStack.pop(); // Parent | Undefined
      * nodeStack.pop(); // Node
      *
-     * nodeStack.push(N, P, Key, 0 | 1);
+     * nodeStack.push(Node, Parent, Key, 0 | 1);
      * ```
      */
-    const nodeStack: (N | P | undefined | string | NodeState)[] = [
-        node,
-        parent,
-        key,
-        0,
-    ];
+    const nodeStack: (
+        | NodeLike
+        | NodeParentLike
+        | undefined
+        | string
+        | NodeState
+    )[] = [node, parent, key, 0];
 
     while (nodeStack.length) {
         // assertionss below are not dangeruous - see the description of `nodeStack`
-        const state = nodeStack.pop() as NodeState;
+        const nodeState = nodeStack.pop() as NodeState;
         const key = nodeStack.pop() as string;
-        const parent = nodeStack.pop() as P;
-        const node = nodeStack.pop() as N;
+        const parent = nodeStack.pop() as NodeParentLike | undefined;
+        const node = nodeStack.pop() as NodeLike;
 
-        if (state) {
+        if (nodeState) {
             // assertion is not dangerous because there is not any truthy value in `stateStack` if `onExit` is not provided.
-            const exitResult = (onExit as OnExit<N, P>)(node, parent, key);
+            const exitResult = (
+                onExit as OnExit<NodeLike, NodeParentLike | undefined>
+            )(node, parent, key);
 
             if (exitResult) {
                 if (exitResult === STOP) {
@@ -112,18 +118,18 @@ export const traverse: Traverse = <
                     }
                 }
             }
-
             if (onExit) {
                 nodeStack.push(node, parent, key, 1);
             }
+
             for (const nodeKey in node) {
-                const property = node[nodeKey];
+                const property = (node as Record<string, unknown>)[nodeKey];
 
                 if (
                     typeof property === 'object' &&
-                    (property as N | null)?.type
+                    (property as NodeLike | null)?.type
                 ) {
-                    nodeStack.push(property as N, node, nodeKey, 0);
+                    nodeStack.push(property as NodeLike, node, nodeKey, 0);
 
                     continue;
                 }
@@ -138,7 +144,7 @@ export const traverse: Traverse = <
                         nodeStack.push(
                             property[propIndex],
 
-                            property as P,
+                            property as NodeParentLike,
 
                             propIndex.toString(),
                             0,

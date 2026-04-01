@@ -12,6 +12,7 @@ export type NodeLike = {
  *
  *
  *
+ *
  * Supertype of every parent of an AST node.
  */
 export type NodeParentLike = NodeLike | NodeLike[];
@@ -21,11 +22,11 @@ export type NodeParentLike = NodeLike | NodeLike[];
  *
  * Basic type of `onEnter`, `onExit`.
  */
-export type Visitor<N extends NodeLike, P extends NodeParentLike | null, R> = (
-    node: N,
-    parent: P,
-    key: string,
-) => R;
+export type Visitor<
+    in N extends NodeLike,
+    in P extends NodeParentLike | undefined,
+    out R,
+> = (node: N, parent: P, key: string) => R;
 
 /**
  * `onEnter` parameter in `traverse` function.
@@ -34,7 +35,7 @@ export type Visitor<N extends NodeLike, P extends NodeParentLike | null, R> = (
  */
 export type OnEnter<
     N extends NodeLike,
-    P extends NodeParentLike | null,
+    P extends NodeParentLike | undefined,
 > = Visitor<N, P, NodeLike | typeof SKIP | typeof STOP | void | null>;
 
 /**
@@ -49,20 +50,21 @@ export type OnEnter<
 
 export type OnExit<
     N extends NodeLike,
-    P extends NodeParentLike | null,
+    P extends NodeParentLike | undefined,
 > = Visitor<N, P, NodeLike | typeof STOP | void | null>;
 
 export type Traverse = {
-    <N extends NodeLike, P extends NodeParentLike | null>(
+    <N extends NodeLike>(
         node: N,
-        onEnter: OnEnter<N, P> | null,
-        onExit: OnExit<N, P> | null,
+        onEnter: OnEnter<N, N | N[] | undefined> | null,
+        onExit: OnExit<N, N | N[] | undefined> | null,
     ): void;
 
     <N extends NodeLike, P extends NodeParentLike>(
         node: N,
-        onEnter: OnEnter<N, P> | null,
-        onExit: OnExit<N, P> | null,
+        onEnter: OnEnter<N, N | N[] | P> | null,
+        onExit: OnExit<N, N | N[] | P> | null,
+
         parent: P,
         key: P extends NodeLike ? Extract<keyof P, string> : string,
     ): void;

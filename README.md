@@ -10,7 +10,7 @@ Overview
 import { traverse } from 'polyast';
 
 // `traverse` is iterative function so there are not problems with AST depth
-traverse<N, P>( // `N` - type of node, `P` - type of parent
+traverse<N, P>( // `N` - type of `node`, `P` - type of `parent`
     node, // Root node to be traversed
 
     (node, parent?, key?) => {}, // Called on every entrance to node. Can be `null`
