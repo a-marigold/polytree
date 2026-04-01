@@ -53,7 +53,7 @@ export type OnExit<
 > = Visitor<N, P, NodeLike | typeof STOP | void | null>;
 
 export type Traverse = {
-    <N extends NodeLike, P extends NodeParentLike>(
+    <N extends NodeLike, P extends NodeParentLike | null>(
         node: N,
         onEnter: OnEnter<N, P> | null,
         onExit: OnExit<N, P> | null,
