@@ -81,7 +81,7 @@ export const traverse: Traverse = (
         const nodeState = nodeStack.pop() as NodeState;
         const key = nodeStack.pop() as string;
         const parent = nodeStack.pop() as NodeParentLike | undefined;
-        const node = nodeStack.pop() as NodeLike;
+        let node = nodeStack.pop() as NodeLike;
 
         if (nodeState) {
             // assertion is not dangerous because there is not any truthy value in `stateStack` if `onExit` is not provided.
@@ -115,6 +115,7 @@ export const traverse: Traverse = (
 
                     if (parent) {
                         (parent as Record<string, unknown>)[key] = enterResult;
+                        node = enterResult;
                     }
                 }
             }

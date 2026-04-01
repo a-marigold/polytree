@@ -1,6 +1,6 @@
 {
     "name": "polyast",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "description": "Library for traversal of any AST, nodes of which have `type` property",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
