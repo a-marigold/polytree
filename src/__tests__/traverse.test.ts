@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'bun:test';
 import { traverse } from '../traverse';
 import { SKIP, STOP } from '../constants';
 
-import type { NodeLike } from 'src/types';
+import type { NodeLike } from '../types';
 
 const testTraverseVisitor = (visitorName: 'onEnter' | 'onExit') => {
     it(`should replace a node if \`${visitorName}\` returned an object`, () => {
@@ -15,11 +15,7 @@ const testTraverseVisitor = (visitorName: 'onEnter' | 'onExit') => {
                 type: toBeReplacedType,
                 value: {
                     type: 'a',
-                    children: [
-                        { type: toBeReplacedType },
-                        { type: 'b' },
-                        { type: 'c' },
-                    ],
+                    children: [{ type: toBeReplacedType }, { type: 'b' }, { type: 'c' }],
                 },
             },
         };
@@ -233,10 +229,7 @@ describe('traverse', () => {
                         type: 'b',
                         value: {
                             type: 'c',
-                            value: [
-                                { type: 'd', value: { type: 'e' } },
-                                { type: 'f' },
-                            ],
+                            value: [{ type: 'd', value: { type: 'e' } }, { type: 'f' }],
                         },
                     },
                 },
@@ -269,10 +262,7 @@ describe('traverse', () => {
                         type: 'A',
                         value: {
                             type: 'B',
-                            value: [
-                                { type: 'C', value: { type: 'D' } },
-                                { type: 'E' },
-                            ],
+                            value: [{ type: 'C', value: { type: 'D' } }, { type: 'E' }],
                         },
                     },
                 },
@@ -287,9 +277,7 @@ describe('traverse', () => {
                 },
             );
 
-            expect(visitedAfterRootTraversal).toMatchInlineSnapshot(
-                `"RootABCDE"`,
-            );
+            expect(visitedAfterRootTraversal).toMatchInlineSnapshot(`"RootABCDE"`);
         });
     });
 });

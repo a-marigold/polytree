@@ -1,17 +1,8 @@
 node_modules
-
-out
 dist
-*.tgz
+
 coverage
 *.lcov
-
-
-
-
-
-
-
 
 .env
 
@@ -20,4 +11,10 @@ coverage
 
 
 
+
+
 __dev__
+
+
+
+

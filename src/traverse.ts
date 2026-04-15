@@ -1,14 +1,11 @@
-import type {
-    NodeLike,
-    NodeParentLike,
-    OnEnter,
-    OnExit,
-    Traverse,
-} from './types';
+import type { NodeLike, NodeParentLike, OnEnter, OnExit, Traverse } from './types';
 
 import { SKIP, STOP } from './constants';
 
 /**
+ *
+ *
+ *
  *
  * #### Traverses `node` iterativly.
  * #### Can traverse any AST that has nodes with `type` property.
@@ -19,7 +16,6 @@ import { SKIP, STOP } from './constants';
  *
  * @template N Type of possible Node that can appear in AST.
  * @template P Type of `parent`.
- *
  * @param node Root node to be traversed.
  *
  * @param onEnter Can return {@link SKIP} not to traverse the current node.
@@ -68,13 +64,12 @@ export const traverse: Traverse = (
      * nodeStack.push(Node, Parent, Key, 0 | 1);
      * ```
      */
-    const nodeStack: (
-        | NodeLike
-        | NodeParentLike
-        | undefined
-        | string
-        | NodeState
-    )[] = [node, parent, key, 0];
+    const nodeStack: (NodeLike | NodeParentLike | undefined | string | NodeState)[] = [
+        node,
+        parent,
+        key,
+        0,
+    ];
 
     while (nodeStack.length) {
         // assertionss below are not dangeruous - see the description of `nodeStack`
@@ -84,10 +79,12 @@ export const traverse: Traverse = (
         let node = nodeStack.pop() as NodeLike;
 
         if (nodeState) {
-            // assertion is not dangerous because there is not any truthy value in `stateStack` if `onExit` is not provided.
-            const exitResult = (
-                onExit as OnExit<NodeLike, NodeParentLike | undefined>
-            )(node, parent, key);
+            // assertion is not dangerous because there `nodeState` is not truthy if `onExit` is not provided.
+            const exitResult = (onExit as OnExit<NodeLike, NodeParentLike | undefined>)(
+                node,
+                parent,
+                key,
+            );
 
             if (exitResult) {
                 if (exitResult === STOP) {
@@ -126,35 +123,31 @@ export const traverse: Traverse = (
             for (const nodeKey in node) {
                 const property = (node as Record<string, unknown>)[nodeKey];
 
-                if (
-                    typeof property === 'object' &&
-                    (property as NodeLike | null)?.type
-                ) {
-                    nodeStack.push(property as NodeLike, node, nodeKey, 0);
+                if (typeof property === 'object' && property) {
+                    if ((property as NodeLike)?.type) {
+                        nodeStack.push(property as NodeLike, node, nodeKey, 0);
 
-                    continue;
-                }
-
-                if (
-                    Array.isArray(property) &&
-                    typeof property[0] === 'object'
-                ) {
-                    let propIndex = property.length - 1;
-
-                    while (propIndex >= 0) {
-                        nodeStack.push(
-                            property[propIndex],
-
-                            property as NodeParentLike,
-
-                            propIndex.toString(),
-                            0,
-                        );
-
-                        propIndex--;
+                        continue;
                     }
 
-                    continue;
+                    if (Array.isArray(property) && typeof property[0] === 'object') {
+                        let propIndex = property.length - 1;
+
+                        while (propIndex >= 0) {
+                            nodeStack.push(
+                                property[propIndex],
+
+                                property as NodeParentLike,
+
+                                propIndex.toString(),
+                                0,
+                            );
+
+                            propIndex--;
+                        }
+
+                        continue;
+                    }
                 }
             }
         }

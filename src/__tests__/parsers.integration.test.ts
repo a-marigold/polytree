@@ -29,7 +29,6 @@ console.log(a + b);`;
             },
             null,
         );
-
         let babelVisited = '';
 
         traverse(
